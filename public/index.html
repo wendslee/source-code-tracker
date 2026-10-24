@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Source Code Daily Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F8F6F2;color:#1A1A1A;font-family:'Montserrat',sans-serif;font-weight:300;min-height:100vh;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ── HEADER ── */
+.hdr{background:#1A1A1A;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#C9A84C;cursor:pointer;}
+.hdr-sub{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:3px;}
+.hdr-right{text-align:right;}
+.hdr-count{font-family:'Cormorant Garamond',serif;font-size:28px;color:#C9A84C;line-height:1;}
+.hdr-count-lbl{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.gear-btn{background:none;border:1px solid rgba(201,168,76,0.4);border-radius:7px;padding:6px 8px;color:#C9A84C;font-size:14px;cursor:pointer;margin-left:10px;}
+
+/* ── QUOTE ── */
+.qbar{background:#fff;border-bottom:1px solid #EDE9E0;padding:13px 22px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:#888;display:flex;gap:8px;align-items:center;}
+.qdot{width:4px;height:4px;border-radius:50%;background:#C9A84C;flex-shrink:0;}
+
+/* ── TABS ── */
+.tabs{display:flex;flex-wrap:nowrap;background:#F8F6F2;border-bottom:2px solid #EDE9E0;position:sticky;top:0;z-index:50;overflow:hidden;}
+.tab{flex:1 1 0;min-width:0;padding:12px 2px;font-size:10px;letter-spacing:0.04em;text-transform:uppercase;color:#bbb;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.tab.on{color:#C9A84C;border-bottom-color:#C9A84C;font-weight:600;}
+
+/* ── CONTENT ── */
+.content{padding:22px 22px 80px;max-width:640px;margin:0 auto;}
+.pane{display:none;}.pane.on{display:block;}
+
+/* ── DATE LABEL ── */
+.dnav-date{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1A1A1A;text-align:center;margin-bottom:2px;}
+.dnav-day{font-size:10px;color:#aaa;text-align:center;margin-bottom:14px;letter-spacing:0.04em;}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid #EDE9E0;border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin-bottom:16px;color:#1A1A1A;}
+
+/* ── WEEK DOTS ── */
+.wdots{display:flex;flex-wrap:nowrap;gap:5px;margin-bottom:18px;}
+.wd{
+  flex:1 1 0;
+  min-width:0;
+  height:52px;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.15s;
+  border:1.5px solid #EDE9E0;
+  gap:3px;
+  user-select:none;
+}
+.wd .wd-letter{font-size:11px;font-weight:600;letter-spacing:0.04em;}
+.wd .wd-day{font-size:10px;font-weight:400;opacity:0.7;}
+.wd.empty{background:#F8F6F2;color:#bbb;}
+.wd.empty:hover{background:#EDE9E0;color:#888;border-color:#C9A84C;}
+.wd.done{background:#C9A84C;color:#fff;border-color:#C9A84C;}
+.wd.done:hover{background:#B89040;border-color:#B89040;}
+.wd.today-marker{border-color:#1A1A1A;border-width:2px;}
+.wd.future{background:#FAFAF8;color:#ddd;border:1.5px dashed #E8E4DC;cursor:default;}
+.wd-hint{font-size:15px;color:#aaa;text-align:center;margin-bottom:18px;margin-top:4px;font-style:italic;font-family:"Cormorant Garamond",serif;}
+
+/* ── STREAK ── */
+.streak{background:#1A1A1A;border-radius:20px;padding:4px 11px;font-size:11px;color:#C9A84C;font-weight:500;}
+
+/* ── BIG BUTTON ── */
+.big-btn{display:block;width:100%;padding:14px;background:#1A1A1A;border:none;border-radius:8px;color:#C9A84C;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.12em;text-align:center;cursor:pointer;text-transform:uppercase;}
+.big-btn:hover{background:#2A2A2A;}
+.big-btn.checked{background:#C9A84C;color:#fff;}
+
+/* ── FIELDS ── */
+.fl{margin-bottom:18px;}
+.fl label{display:block;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;}
+.fi{width:100%;background:#F8F6F2;border:1px solid #EDE9E0;border-radius:7px;color:#1A1A1A;font-family:'Cormorant Garamond',serif;font-size:15px;padding:10px 12px;outline:none;transition:border-color 0.15s;}
+.fi:focus{border-color:#C9A84C;background:#fff;}
+.fi::placeholder{color:#ccc;font-style:italic;}
+textarea.fi{overflow:hidden;min-height:70px;}
+#rNotes, #rLove, #rAccept{overflow:auto;resize:vertical;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;}
+.save-row{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:10px;}
+.saved{font-size:11px;color:#C9A84C;font-style:italic;opacity:0;transition:opacity 0.3s;}
+.saved.show{opacity:1;}
+.save-btn{padding:8px 18px;background:#1A1A1A;border:none;border-radius:7px;color:#C9A84C;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;}
+
+/* ── GOALS ── */
+.goals-box{background:#FDFBF4;border:1.5px solid rgba(201,168,76,0.25);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.goals-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;}
+.goals-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#aaa;margin-bottom:16px;}
+.goal-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #EDE9E0;}
+.goal-row:last-of-type{border-bottom:none;}
+.gcb{width:20px;height:20px;border:1.5px solid #C9A84C;border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.gcb.on{background:#C9A84C;}
+.gcb.on::after{content:'✓';color:#fff;font-size:11px;font-weight:700;}
+.gi{flex:1;background:transparent;border:none;border-bottom:1px solid #EDE9E0;color:#1A1A1A;font-family:'Cormorant Garamond',serif;font-size:15px;padding:2px 0 5px;outline:none;}
+.gi:focus{border-bottom-color:#C9A84C;}
+.gi::placeholder{color:#ccc;font-style:italic;}
+.gi.struck{text-decoration:line-through;color:#bbb;}
+.grm{color:#ddd;cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;}
+.grm:hover{color:#bbb;}
+.goals-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.g-add{background:transparent;border:1px dashed rgba(201,168,76,0.4);border-radius:6px;color:#C9A84C;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer;}
+.g-save{background:transparent;border:1px solid #C9A84C;border-radius:6px;color:#C9A84C;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer;}
+.g-save:hover{background:#C9A84C;color:#fff;}
+
+/* ── GOALS TAB ── */
+.week-section{margin-bottom:28px;}
+.week-hdr{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:#1A1A1A;margin-bottom:2px;}
+.week-range{font-size:11px;color:#aaa;letter-spacing:0.04em;margin-bottom:14px;}
+.goal-item{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;border:1px solid #EDE9E0;border-radius:8px;margin-bottom:8px;}
+.gtick{width:17px;height:17px;border-radius:3px;flex-shrink:0;}
+.gtick.on{background:#C9A84C;display:flex;align-items:center;justify-content:center;}
+.gtick.on::after{content:'✓';color:#fff;font-size:10px;font-weight:700;}
+.gtick.off{border:1.5px solid #ddd;}
+.gtxt{font-family:'Cormorant Garamond',serif;font-size:15px;color:#1A1A1A;flex:1;line-height:1.4;}
+.gtxt.struck{text-decoration:line-through;color:#bbb;}
+.no-goals{font-size:13px;color:#ccc;font-style:italic;padding:6px 0;}
+
+/* ── JOURNAL TAB ── */
+.jentry{background:#fff;border:1px solid #EDE9E0;border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.jhdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;user-select:none;}
+.jhdr:hover{background:#FDFBF4;}
+.jdate{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C9A84C;font-weight:600;}
+.jdaynum{font-size:10px;color:#aaa;margin-top:1px;}
+.jbadge{font-size:10px;padding:2px 8px;border-radius:10px;}
+.jbadge.yes{background:#1A1A1A;color:#C9A84C;}
+.jbadge.no{background:#F4F2EE;color:#bbb;}
+.jchev{font-size:11px;color:#bbb;transition:transform 0.2s;margin-left:6px;}
+.jchev.open{transform:rotate(180deg);}
+.jbody{display:none;padding:0 16px 14px;border-top:1px solid #F0EDE8;}
+.jbody.open{display:block;}
+.jf{margin-top:10px;}
+.jlbl{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:3px;}
+.jval{font-family:'Cormorant Garamond',serif;font-size:15px;color:#1A1A1A;line-height:1.5;}
+.j2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.jedit{margin-top:10px;padding:6px 12px;background:transparent;border:1px solid #EDE9E0;border-radius:6px;color:#888;font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;}
+.jedit:hover{border-color:#C9A84C;color:#C9A84C;}
+
+/* ── PROGRESS TAB ── */
+.hmap{display:grid;gap:3px;margin-bottom:8px;}
+.hc{aspect-ratio:1;border-radius:2px;cursor:pointer;}
+.hc.on{background:#C9A84C;}
+.hc.off{background:#EEECE8;}
+.pbar-wrap{height:4px;background:#EEECE8;border-radius:2px;overflow:hidden;margin-top:2px;}
+.pbar{height:100%;background:linear-gradient(90deg,#C9A84C,#E8C96A);border-radius:2px;transition:width 0.5s;}
+.plbls{display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+.stat{background:#fff;border:1px solid #EDE9E0;border-radius:10px;padding:14px 8px;text-align:center;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:28px;color:#1A1A1A;line-height:1;margin-bottom:3px;}
+.stat-l{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;}
+.badges{display:flex;gap:8px;flex-wrap:wrap;}
+.bdg{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 12px;border-radius:10px;border:1px solid #EDE9E0;background:#fff;min-width:58px;}
+.bdg.on{border-color:#C9A84C;background:#FDFBF4;}
+.bdg.off{opacity:0.35;}
+.bdg-i{font-size:18px;}
+.bdg-l{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#aaa;}
+.bdg.on .bdg-l{color:#C9A84C;}
+
+/* ── SETUP SCREEN ── */
+.setup{padding:32px 22px 40px;max-width:500px;margin:0 auto;text-align:center;}
+.setup h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#C9A84C;margin-bottom:8px;}
+.setup p{font-size:12px;color:#888;line-height:1.7;margin-bottom:28px;}
+.setup-card{background:#fff;border:1px solid #EDE9E0;border-radius:12px;padding:26px 24px;text-align:left;}
+.slbl{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:8px;display:block;}
+.lopts{display:flex;gap:8px;margin-bottom:18px;}
+.lopt{flex:1;padding:10px 6px;text-align:center;border:1.5px solid #EDE9E0;border-radius:8px;cursor:pointer;background:#fff;transition:all 0.15s;}
+.lopt:hover,.lopt.on{border-color:#C9A84C;background:#FDFBF4;}
+.lopt-n{font-family:'Cormorant Garamond',serif;font-size:22px;color:#C9A84C;line-height:1;}
+.lopt-l{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;margin-top:2px;}
+.sname{width:100%;background:#F8F6F2;border:1px solid #EDE9E0;border-radius:7px;color:#1A1A1A;font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;outline:none;margin-bottom:18px;}
+.sname:focus{border-color:#C9A84C;background:#fff;}
+
+/* ── SETTINGS SHEET ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:flex-end;justify-content:center;visibility:hidden;opacity:0;pointer-events:none;display:flex;transition:opacity 0.2s;}
+.overlay.open{visibility:visible;opacity:1;pointer-events:all;}
+.sheet{background:#F8F6F2;border-radius:16px 16px 0 0;width:100%;max-width:640px;padding:24px 24px 48px;}
+.sheet-handle{width:36px;height:4px;background:#DDD9D0;border-radius:2px;margin:0 auto 16px;}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#1A1A1A;margin-bottom:20px;}
+.sbtn{width:100%;padding:13px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;margin-bottom:10px;}
+.sbtn.black{background:#1A1A1A;border:none;color:#C9A84C;}
+.sbtn.gray{background:#F4F2EE;border:1px solid #EDE9E0;color:#666;}
+.sbtn.red{background:transparent;border:1px solid #DDD9D0;color:#aaa;}
+.sbtn.ghost{background:transparent;border:none;color:#bbb;}
+
+.empty{color:#ccc;font-size:13px;text-align:center;padding:40px 0;line-height:1.8;}
+.sec-lbl{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:14px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:#1A1A1A;border-radius:10px;padding:10px 20px;font-size:12px;color:#C9A84C;font-weight:500;transition:transform 0.25s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.footer{text-align:center;padding:24px 20px 32px;font-size:10px;color:#bbb;letter-spacing:0.08em;border-top:1px solid #EDE9E0;margin-top:20px;}
+.footer a{color:#C9A84C;text-decoration:none;}
+
+/* ── HISTORY TAB ── */
+.prog-card{background:#fff;border:1px solid #EDE9E0;border-radius:12px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+.prog-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.prog-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1A1A1A;}
+.prog-dates{font-size:10px;color:#aaa;margin-top:2px;letter-spacing:0.04em;}
+.prog-badge{background:#1A1A1A;color:#C9A84C;font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.prog-badge.complete{background:#C9A84C;color:#fff;}
+.prog-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.prog-stat{text-align:center;background:#F8F6F2;border-radius:8px;padding:10px 6px;}
+.prog-stat-n{font-family:'Cormorant Garamond',serif;font-size:22px;color:#1A1A1A;line-height:1;margin-bottom:2px;}
+.prog-stat-l{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;}
+.prog-view-btn{width:100%;padding:10px;background:transparent;border:1px solid #EDE9E0;border-radius:7px;color:#888;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;}
+.prog-view-btn:hover{border-color:#C9A84C;color:#C9A84C;}
+.current-badge{display:inline-block;background:#FDFBF4;border:1px solid rgba(201,168,76,0.3);color:#C9A84C;font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;}
+
+/* ── NEW PROGRAM MODAL ── */
+.npmodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;align-items:center;justify-content:center;padding:20px;visibility:hidden;opacity:0;pointer-events:none;display:flex;transition:opacity 0.2s;}
+.npmodal-overlay.open{visibility:visible;opacity:1;pointer-events:all;}
+.npmodal{background:#fff;border-radius:14px;padding:28px 24px;max-width:380px;width:100%;}
+.npmodal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#1A1A1A;margin-bottom:6px;}
+.npmodal-sub{font-size:12px;color:#888;line-height:1.6;margin-bottom:20px;}
+.npmodal-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:8px;display:block;}
+.npmodal-input{width:100%;background:#F8F6F2;border:1px solid #EDE9E0;border-radius:7px;color:#1A1A1A;font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;outline:none;margin-bottom:16px;}
+.npmodal-input:focus{border-color:#C9A84C;background:#fff;}
+
+/* ── PRINT STYLES ── */
+@media print {
+  .tabs,.gear-btn,.dnav,.goals-footer,.save-row,.jedit,.footer,.toast,.overlay{display:none!important;}
+  body{background:#fff!important;padding:0!important;}
+  .hdr{background:#1A1A1A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .card,.goals-box,.jentry{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid;}
+  .pane{display:block!important;}
+  .screen{display:block!important;}
+  .hmap .hc.on{background:#C9A84C!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .big-btn,.g-add,.g-save,.save-btn{display:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div class="screen active" id="screenSetup">
+  <div style="background:#1A1A1A;padding:16px 20px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#C9A84C;">✦ Source Code Daily Tracker</div>
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:3px;">Wendy Lee-Chu · Energy Healing &amp; Therapy</div>
+  </div>
+  <div class="setup">
+    <h2>Welcome to Your Source Code</h2>
+    <p>Your activation audio and daily journal — together in one place.<br/>Track your listens, journal your shifts, and watch your recode unfold.</p>
+    <div class="setup-card">
+      <label class="slbl" style="margin-bottom:8px;">Choose Your Program Length</label>
+      <div class="lopts" id="setupLopts" style="margin-bottom:24px;">
+        <div class="lopt on" data-v="21"><div class="lopt-n">21</div><div class="lopt-l">Days</div></div>
+        <div class="lopt" data-v="28"><div class="lopt-n">28</div><div class="lopt-l">Days</div></div>
+        <div class="lopt" data-v="30"><div class="lopt-n">30</div><div class="lopt-l">Days</div></div>
+      </div>
+      <div style="height:1px;background:#EDE9E0;margin-bottom:22px;"></div>
+      <!-- HOW TO USE -->
+      <div style="margin-bottom:18px;">
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:14px;">How This Works</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#C9A84C;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">Listen to your activation audio daily</div>
+              <div style="font-size:11px;color:#666;line-height:1.6;">Open the Check-In tab each day and tap your day square to mark it complete. Consistency is everything — every listen installs the new code deeper.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#C9A84C;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">Set weekly goals</div>
+              <div style="font-size:11px;color:#666;line-height:1.6;">Each week, write 1–3 action steps that support your transformation. Uncompleted goals carry over automatically to the next week. Review all goals in the Goals tab.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#C9A84C;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">Complete your Source Code Daily Journal</div>
+              <div style="font-size:11px;color:#666;line-height:1.6;">Write your daily affirmation, self-love prompts, three gratitudes, and how you felt before and after listening. Your full journal history lives in the Journal tab.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#C9A84C;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#1A1A1A;margin-bottom:2px;">Track your progress</div>
+              <div style="font-size:11px;color:#666;line-height:1.6;">The Progress tab shows your activity map, streak, and milestones. When your program is complete, start a new one from Settings — your history is always preserved.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVE THIS PAGE -->
+        <div style="background:#FDFBF4;border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:14px 16px;margin-bottom:0;">
+          <div style="font-size:11px;font-weight:600;color:#1A1A1A;margin-bottom:8px;">📌 Save this page before you begin</div>
+          <div style="font-size:11px;color:#555;line-height:1.8;">
+            <div>📱 <strong>iPhone:</strong> Tap Share → Add to Home Screen</div>
+            <div>🤖 <strong>Android:</strong> Tap Menu → Add to Home Screen</div>
+            <div>💻 <strong>Desktop:</strong> Press Cmd+D (Mac) or Ctrl+D (Windows)</div>
+          </div>
+          <div style="font-size:11px;color:#C9A84C;font-style:italic;font-family:'Cormorant Garamond',serif;margin-top:8px;">Your data saves in this browser. Use ⚙ Settings → Export to back it up anytime.</div>
+        </div>
+      </div>
+
+      <button class="big-btn" id="btnStart">Begin My Recode ✦</button>
+    </div>
+  </div>
+  <footer class="footer">
+    © 2026 Wendy Lee-Chu. All rights reserved. &nbsp;|&nbsp;
+    <a href="https://wendyleechu.com" target="_blank">wendyleechu.com</a>
+  </footer>
+</div>
+
+<!-- ══ MAIN APP SCREEN ══ -->
+<div class="screen" id="screenApp">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title" id="btnHome" style="cursor:pointer;" title="Go to Check-In">✦ Source Code Daily Tracker</div>
+      <div class="hdr-sub">Every listen installs the new code. Repetition deploys it.</div>
+    </div>
+    <div style="display:flex;align-items:center;">
+      <div class="hdr-right">
+        <div class="hdr-count" id="hdrCount">0</div>
+        <div class="hdr-count-lbl" id="hdrLbl">Days Complete</div>
+      </div>
+      <button class="gear-btn" id="btnGear">⚙</button>
+    </div>
+  </div>
+  <div class="qbar"><span class="qdot"></span><span id="quoteEl"></span></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="checkin">Check-In</button>
+    <button class="tab" data-tab="goals">Goals</button>
+    <button class="tab" data-tab="journal">Journal</button>
+    <button class="tab" data-tab="progress">Progress</button>
+    <button class="tab" data-tab="history">History</button>
+  </div>
+
+  <div class="content">
+
+    <!-- CHECK-IN PANE -->
+    <div class="pane on" id="pane-checkin">
+      <div id="checkinBody"></div>
+    </div>
+
+    <!-- GOALS PANE -->
+    <div class="pane" id="pane-goals">
+      <div class="sec-lbl">All Weekly Goals</div>
+      <div id="goalsBody"></div>
+    </div>
+
+    <!-- JOURNAL PANE -->
+    <div class="pane" id="pane-journal">
+      <div class="sec-lbl">All Entries</div>
+      <div id="journalBody"></div>
+    </div>
+
+    <!-- HISTORY PANE -->
+    <div class="pane" id="pane-history">
+      <div class="sec-lbl">Past Programs</div>
+      <div id="historyBody"></div>
+    </div>
+
+    <!-- PROGRESS PANE -->
+    <div class="pane" id="pane-progress">
+      <div class="sec-lbl" id="progressLbl">Activity Map</div>
+      <div class="card">
+        <div class="hmap" id="hmap"></div>
+        <div class="pbar-wrap"><div class="pbar" id="pbar" style="width:0%"></div></div>
+        <div class="plbls"><span id="plLeft">Day 0</span><span id="plRight">0%</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="stS">0</div><div class="stat-l">Streak</div></div>
+        <div class="stat"><div class="stat-n" id="stD">0</div><div class="stat-l">Days Listened</div></div>
+        <div class="stat"><div class="stat-n" id="stR">0%</div><div class="stat-l">Completion</div></div>
+      </div>
+      <div class="sec-lbl">Milestones</div>
+      <div class="badges" id="badges"></div>
+    </div>
+
+    <footer class="footer" id="appFooter">
+    © 2026 Wendy Lee-Chu. All rights reserved. &nbsp;|&nbsp;
+    <a href="https://wendyleechu.com" target="_blank">wendyleechu.com</a>
+  </footer>
+</div><!-- end content -->
+</div><!-- end screenApp -->
+
+<!-- ══ SETTINGS SHEET ══ -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="sheet-title" style="margin-bottom:0;">Settings</div>
+      <button id="btnViewInstructions" style="background:transparent;border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:6px 12px;color:#C9A84C;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">View Instructions</button>
+    </div>
+    <label class="slbl">Program Name</label>
+    <input class="sname" id="settLabel" placeholder="e.g. Reset 1 — Source Code Reset" style="margin-bottom:18px;"/>
+    <label class="slbl">Change Program Length</label>
+    <div style="font-size:11px;color:#aaa;margin-bottom:10px;line-height:1.5;">Adjusts the target for your current active program.</div>
+    <div class="lopts" id="settLopts" style="margin-bottom:18px;">
+      <div class="lopt" data-v="21"><div class="lopt-n">21</div><div class="lopt-l">Days</div></div>
+      <div class="lopt" data-v="28"><div class="lopt-n">28</div><div class="lopt-l">Days</div></div>
+      <div class="lopt" data-v="30"><div class="lopt-n">30</div><div class="lopt-l">Days</div></div>
+    </div>
+    <button class="sbtn black" id="btnSettSave">Save Changes</button>
+    <button class="sbtn gray" id="btnPrint">⬇ Save / Print as PDF</button>
+    <div style="height:1px;background:#E8E4DC;margin:4px 0 10px;"></div>
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;">Data Backup</div>
+    <div style="font-size:11px;color:#888;line-height:1.6;margin-bottom:12px;">Export downloads a backup file you can save anywhere — Google Drive, iCloud, your desktop, or any folder. To restore your data on any device or browser, tap Restore and select that file.</div>
+    <button class="sbtn gray" id="btnExport">⬇ Export Backup File</button>
+    <label class="sbtn gray" style="text-align:center;cursor:pointer;display:block;">⬆ Restore from Backup File<input type="file" accept=".json" id="importFile" style="display:none;"/></label>
+    <div style="font-size:10px;color:#aaa;font-style:italic;margin-top:-4px;margin-bottom:8px;text-align:center;">Select the .json file you previously exported</div>
+    <div style="height:1px;background:#E8E4DC;margin:4px 0 10px;"></div>
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;">Programs</div>
+    <button class="sbtn black" id="btnNewProgram">✦ Start New Program</button>
+    <div style="font-size:11px;color:#888;line-height:1.6;margin-bottom:10px;">Archives your current program and starts fresh. All history is preserved in the History tab.</div>
+    <button class="sbtn red" id="btnReset">Reset & Erase All Data</button>
+    <div style="font-size:10px;color:#aaa;font-style:italic;margin-top:-4px;">Permanently deletes everything. Cannot be undone.</div>
+    <button class="sbtn ghost" id="btnSettClose">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- NEW PROGRAM MODAL -->
+<div class="npmodal-overlay" id="npModal">
+  <div class="npmodal">
+    <div class="npmodal-title">Start a New Program</div>
+    <div class="npmodal-sub">Your current progress will be archived and accessible in the History tab. Name your new program, choose its length, and begin.</div>
+    <label class="npmodal-label">Program Name (optional)</label>
+    <input class="npmodal-input" id="npLabel" placeholder="e.g. Reset 2 — Abundance, Reset 2 — Self-Worth…"/>
+    <label class="npmodal-label">Program Length</label>
+    <div class="lopts" id="npLopts" style="margin-bottom:20px;">
+      <div class="lopt on" data-v="21"><div class="lopt-n">21</div><div class="lopt-l">Days</div></div>
+      <div class="lopt" data-v="28"><div class="lopt-n">28</div><div class="lopt-l">Days</div></div>
+      <div class="lopt" data-v="30"><div class="lopt-n">30</div><div class="lopt-l">Days</div></div>
+    </div>
+    <button class="big-btn" id="btnConfirmNewProg" style="margin-bottom:10px;">Begin New Program ✦</button>
+    <button class="sbtn ghost" id="btnCancelNewProg" style="width:100%;padding:10px;background:transparent;border:none;color:#bbb;font-family:Montserrat,sans-serif;font-size:11px;cursor:pointer;">Cancel</button>
+  </div>
+</div>
+
+<!-- bookmark tip removed -->
+
+<script>
+// ── QUOTES ────────────────────────────────────────────────────
+const QQ = [
+  'A record of presence, not perfection.',
+  'You are not healing. You are remembering who you always were.',
+  'Repetition is the language of the subconscious mind.',
+  'Consistency creates transformation. Awareness makes it lasting.',
+  'Every listen strengthens a new neural pathway.',
+  'What you rehearse in the mind, you live in the body.',
+  'Show up for the version of you who is already free.',
+  'Trust the process you cannot yet see working.',
+  'Integration happens in the listening. Transformation happens in the living.',
+  'Your subconscious does not need convincing. It needs repetition.',
+  'Your subconscious accepted the new belief. Now let it run.',
+  'You are not broken. You were running outdated programming.',
+  'You are not becoming someone new. You are returning to who you were before the world told you otherwise.',
+  'The version of you who has already healed is waiting on the other side of consistency.',
+  'Healing is not a feeling. It is a decision you make daily.',
+  'You showed up today. That is the whole job.',
+  'Progress is not always visible. It is always happening.'
+];
+
+const BADGES_DEF = [{d:7,i:'🌱',l:'7 Days'},{d:14,i:'🌿',l:'14 Days'},{d:21,i:'🦋',l:'21 Days'},{d:30,i:'✨',l:'30 Days'}];
+const WD = ['S','M','T','W','T','F','S'];
+const KEY = 'recode_v1';
+
+// ── STATE ─────────────────────────────────────────────────────
+// State: { current: {...program}, archive: [{...program}, ...] }
+let STATE = null;  // full storage object
+let S = null;      // current active program
+let vd = null;     // currently viewed date string
+
+function loadState() {
+  try {
+    STATE = JSON.parse(localStorage.getItem(KEY));
+    if (STATE && STATE.current) {
+      S = STATE.current;
+    } else if (STATE && STATE.startDate) {
+      // migrate old flat structure
+      STATE = { current: STATE, archive: [] };
+      S = STATE.current;
+      saveState();
+    } else {
+      // Try migrating from older storage keys
+      STATE = null; S = null;
+      const oldKeys = ['act_v4','act_v3','act_tracker_v2','activation_tracker_v1','src_recode','recode_v1'];
+      for (const k of oldKeys) {
+        try {
+          const old = JSON.parse(localStorage.getItem(k) || 'null');
+          if (old && old.startDate && old.programDays) {
+            if (old.current) {
+              STATE = old; S = old.current;
+            } else {
+              STATE = { current: old, archive: [] }; S = STATE.current;
+            }
+            if (!S.weeklyGoals) S.weeklyGoals = {};
+            if (!S.journal) S.journal = {};
+            saveState();
+            localStorage.removeItem(k);
+            break;
+          }
+        } catch(e) {}
+      }
+    }
+  } catch(e) { STATE = null; S = null; }
+}
+function saveState() {
+  if (STATE) STATE.current = S;
+  try { localStorage.setItem(KEY, JSON.stringify(STATE || {current:S,archive:[]})); } catch(e) {}
+}
+function getArchive() {
+  return (STATE && STATE.archive) ? STATE.archive : [];
+}
+
+// ── DATE UTILS ────────────────────────────────────────────────
+function ds(d) { return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+function p2(n) { return String(n).padStart(2,'0'); }
+function today() { return ds(new Date()); }
+function parse(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function diff(a,b) { return Math.round((parse(b)-parse(a))/86400000); }
+function fmt(s) { return parse(s).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); }
+function fmts(s) { return parse(s).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function progDay(d) { return Math.max(1, Math.min(diff(S.startDate,d)+1, S.programDays)); }
+function wkNum(d) { return Math.ceil(progDay(d)/7); }
+function totalWks() { return Math.ceil(S.programDays/7); }
+function streak() { let n=0,d=new Date(); while(S.checkIns.includes(ds(d))){ n++; d.setDate(d.getDate()-1); } return n; }
+function doneCount() { return S.checkIns.filter(d=>d<=today()).length; }
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-'+name));
+  if (name === 'goals') renderGoals();
+  if (name === 'journal') renderJournal();
+  if (name === 'progress') renderProgress();
+  if (name === 'history') renderHistory();
+}
+
+// ── SETUP LENGTH OPTS ─────────────────────────────────────────
+function initOpts(containerId) {
+  document.getElementById(containerId).querySelectorAll('.lopt').forEach(el => {
+    el.addEventListener('click', function() {
+      document.getElementById(containerId).querySelectorAll('.lopt').forEach(e => e.classList.remove('on'));
+      this.classList.add('on');
+    });
+  });
+}
+function getSelDays(containerId) {
+  const el = document.querySelector('#'+containerId+' .lopt.on');
+  return el ? parseInt(el.dataset.v) : 21;
+}
+function setSelDays(containerId, days) {
+  document.getElementById(containerId).querySelectorAll('.lopt').forEach(el => {
+    el.classList.toggle('on', parseInt(el.dataset.v) === days);
+  });
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+
+
+// ── CHECK-IN RENDER ───────────────────────────────────────────
+function renderCheckin() {
+  if (!S || !vd) return;
+
+  const t = today();
+  const ck = S.checkIns.includes(vd);
+  const entry = S.journal[vd] || {};
+  const wk = 'w' + wkNum(vd);
+  const pd = progDay(vd);
+
+  // Clickable day squares — Sun to Sat of the week containing today
+  // Always show current week so they can tap to check in
+  const wDate = new Date(); // always today's week
+  const wStart = new Date(wDate); wStart.setDate(wDate.getDate() - wDate.getDay());
+  let dotsHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(wStart); d.setDate(wStart.getDate()+i);
+    const s = ds(d);
+    const isFut = s > t;
+    const isDone = S.checkIns.includes(s);
+    const isToday = s === t;
+    const dayNum = d.getDate();
+    const cls = isFut ? 'future' : isDone ? 'done' : 'empty';
+    const todayCls = isToday ? ' today-marker' : '';
+    if (isFut) {
+      dotsHTML += '<div class="wd future"><span class="wd-letter">'+WD[i]+'</span><span class="wd-day">'+dayNum+'</span></div>';
+    } else {
+      dotsHTML += '<div class="wd '+cls+todayCls+'" data-date="'+s+'"><span class="wd-letter">'+WD[i]+'</span><span class="wd-day">'+dayNum+'</span></div>';
+    }
+  }
+
+  // Goals for this week
+  const goals = getGoals(wk);
+  let goalsHTML = '<div class="goals-box"><div class="goals-title">Week '+wkNum(vd)+' Goals</div><div class="goals-sub">Actions I am taking this week</div>';
+  const PLACEHOLDERS = [
+    'e.g. Journal for 5 minutes each morning',
+    'e.g. Take a 10-minute walk outside',
+    'e.g. Drink 8 glasses of water daily'
+  ];
+  goals.forEach((g,i) => {
+    const ph = PLACEHOLDERS[i] || 'e.g. Add a new action step';
+    const carriedBadge = g.carriedOver ? '<span style="font-size:9px;color:#C9A84C;letter-spacing:0.06em;text-transform:uppercase;opacity:0.7;flex-shrink:0;" title="Carried over from last week">↻</span>' : '';
+    goalsHTML += '<div class="goal-row"><div class="gcb'+(g.done?' on':'')+'" data-wk="'+wk+'" data-i="'+i+'"></div><input class="gi'+(g.done?' struck':'')+'" data-gi="'+i+'" placeholder="'+ph+'" value="'+escHtml(g.text)+'"/>'+carriedBadge+'<span class="grm" data-wk="'+wk+'" data-i="'+i+'">×</span></div>';
+  });
+  goalsHTML += '<div class="goals-footer"><button type="button" class="g-add" data-wk="'+wk+'">+ Add Goal</button><button type="button" class="g-save" data-wk="'+wk+'">Save Goals</button></div></div>';
+
+  // Source Code Daily Journal prompts (mood before/after live in the check-in card above)
+  // Order: Affirmation → Love → Accept → Gratitudes → Reflection → Self-care today
+  const reflHTML = '<div class="card">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;">' +
+      '<div class="card-title" style="margin-bottom:0;">Source Code Daily Journal</div>' +
+      '<div style="font-size:10px;color:#aaa;letter-spacing:0.06em;">'+fmt(vd)+'</div>' +
+    '</div>' +
+
+    // 1. Daily Affirmation
+    '<div class="fl"><label>Daily Affirmation</label>' +
+    '<textarea class="fi" id="rAffirmation" placeholder="Write your affirmation for today...">'+escHtml(entry.affirmation||'')+'</textarea></div>' +
+
+    // 2. Love / Accept
+    '<div class="fl"><label>I love myself today because…</label>' +
+    '<textarea class="fi" id="rLove" placeholder="e.g. I showed up even when it felt hard" style="min-height:70px;resize:vertical;overflow:auto;">'+escHtml(entry.love||'')+'</textarea></div>' +
+    '<div class="fl"><label>I accept myself today for…</label>' +
+    '<textarea class="fi" id="rAccept" placeholder="e.g. where I am right now in my journey" style="min-height:70px;resize:vertical;overflow:auto;">'+escHtml(entry.accept||'')+'</textarea></div>' +
+
+    // 3. Gratitudes
+    '<div class="fl"><label>Three things I am grateful for today</label>' +
+    '<input class="fi" id="rGrat1" placeholder="1." value="'+escHtml(entry.grat1||'')+'" style="margin-bottom:6px;"/>' +
+    '<input class="fi" id="rGrat2" placeholder="2." value="'+escHtml(entry.grat2||'')+'" style="margin-bottom:6px;"/>' +
+    '<input class="fi" id="rGrat3" placeholder="3." value="'+escHtml(entry.grat3||'')+'"/></div>' +
+
+    // 4. Free reflection
+    '<div class="fl"><label>Daily Reflection</label><textarea class="fi" id="rNotes" placeholder="What shifted for me today\u2026" style="min-height:100px;resize:vertical;">'+escHtml(entry.notes||'')+'</textarea></div>' +
+
+    // 5. Self-care today
+    '<div class="fl"><label>For self-care today I will…</label>' +
+    '<input class="fi" id="rSelfcare" placeholder="e.g. take a slow walk, rest without guilt" value="'+escHtml(entry.selfcare||'')+'"/></div>' +
+
+    '<div class="save-row"><span class="saved" id="reflSaved">Saved ✓</span><button type="button" class="save-btn" id="btnSaveRefl">Save</button></div></div>';
+
+  document.getElementById('checkinBody').innerHTML =
+    // ── 1. DATE / STREAK / PROGRAM NAME card ──
+    '<div class="card">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">' +
+        '<input id="programNameInput" value="'+(S.label||'')+'" placeholder="Name this program" style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#C9A84C;font-weight:600;background:transparent;border:none;border-bottom:1.5px solid transparent;outline:none;padding:0 0 2px;font-family:Montserrat,sans-serif;cursor:text;flex:1;min-width:0;" title="Tap to rename"/>' +
+        '<span style="font-size:11px;color:rgba(201,168,76,0.45);flex-shrink:0;" id="progNameIcon">✎</span>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">' +
+        '<div>' +
+          '<div class="dnav-date">'+fmt(t)+'</div>' +
+          '<div class="dnav-day">Day '+progDay(t)+' of '+S.programDays+' &nbsp;·&nbsp; Week '+wkNum(vd)+'</div>' +
+        '</div>' +
+        '<span class="streak">🔥 '+streak()+'</span>' +
+      '</div>' +
+
+      // ── 2. MOOD BEFORE ──
+      '<div style="margin-bottom:14px;"><label style="display:block;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;">How I\'m Feeling Right Now</label>' +
+      '<input class="fi" id="rBefore" placeholder="e.g. anxious, tired, hopeful\u2026" value="'+escHtml(entry.before||'')+'"/></div>' +
+
+      // ── 3. WEEK DOTS ──
+      '<div class="wd-hint">Tap a day to mark your activation audio complete</div>' +
+      '<div class="wdots">'+dotsHTML+'</div>' +
+
+      // ── 4. MOOD AFTER ──
+      '<div style="margin-top:14px;"><label style="display:block;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:6px;">How I Feel After Listening</label>' +
+      '<input class="fi" id="rAfter" placeholder="e.g. calm, clear, lighter\u2026" value="'+escHtml(entry.after||'')+'"/></div>' +
+
+    '</div>' +
+    '<div style="height:1px;background:#EDE9E0;margin:4px 0 14px;"></div>' +
+
+    // ── 5. JOURNAL CARD (affirmation → love → accept → gratitudes → reflection → self-care) ──
+    reflHTML +
+
+    // ── 6. WEEKLY GOALS ──
+    goalsHTML +
+
+    // ── 7. DAILY ACTION STEPS (1 default, up to 3) ──
+    '<div class="card" id="actionStepsCard">' +
+      '<div class="card-title">My Action Steps Today</div>' +
+      '<div style="font-size:12px;color:#aaa;font-family:\'Cormorant Garamond\',serif;font-style:italic;margin-bottom:14px;margin-top:-8px;">In order of priority — start with step 1</div>' +
+      '<div class="fl"><label>1. Most Important</label><input class="fi action-step-input" id="rActionStep1" placeholder="e.g. Send that email, book the appointment\u2026" value="'+escHtml((entry.actionSteps&&entry.actionSteps[0])||entry.actionStep||'')+'"/></div>' +
+      (((entry.actionSteps&&entry.actionSteps[1])||'') ? '<div class="fl" id="actionStep2Row"><label>2.</label><input class="fi action-step-input" id="rActionStep2" placeholder="e.g. Say no to one thing\u2026" value="'+escHtml((entry.actionSteps&&entry.actionSteps[1])||'')+'"/></div>' : '<div id="actionStep2Row" style="display:none;"><div class="fl"><label>2.</label><input class="fi action-step-input" id="rActionStep2" placeholder="e.g. Say no to one thing\u2026" value=""/></div></div>') +
+      (((entry.actionSteps&&entry.actionSteps[2])||'') ? '<div class="fl" id="actionStep3Row"><label>3.</label><input class="fi action-step-input" id="rActionStep3" placeholder="e.g. One more small win\u2026" value="'+escHtml((entry.actionSteps&&entry.actionSteps[2])||'')+'"/></div>' : '<div id="actionStep3Row" style="display:none;"><div class="fl"><label>3.</label><input class="fi action-step-input" id="rActionStep3" placeholder="e.g. One more small win\u2026" value=""/></div></div>') +
+      '<div id="addStepBtnWrap"><button type="button" id="btnAddStep" style="background:transparent;border:1px dashed rgba(201,168,76,0.4);border-radius:6px;color:#C9A84C;font-family:\'Montserrat\',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer;margin-top:4px;">+ Add Another Step</button></div>' +
+    '</div>';
+
+  // Auto-expand textareas
+  ['rAffirmation','rNotes'].forEach(id => {
+    const ta = document.getElementById(id);
+    if (ta) { autoGrow(ta); ta.addEventListener('input', () => autoGrow(ta)); }
+  });
+
+  // Wire day square clicks
+  document.querySelectorAll('.wd[data-date]').forEach(el => {
+    el.addEventListener('click', function() {
+      const dateStr = this.dataset.date;
+      const i = S.checkIns.indexOf(dateStr);
+      if (i === -1) {
+        S.checkIns.push(dateStr);
+        const dc = doneCount(), st = streak();
+        if (dc >= S.programDays) toast('🦋 Program complete! Tap ⚙ to start a new one.');
+        else toast('✓ Day '+dc+' complete — '+st+' day streak');
+      } else {
+        S.checkIns.splice(i,1);
+        toast('Removed: '+fmts(dateStr));
+      }
+      saveState(); renderCheckin(); renderProgress();
+    });
+  });
+
+  document.getElementById('btnSaveRefl').addEventListener('click', function() {
+    if (!S.journal[vd]) S.journal[vd] = {};
+    S.journal[vd].affirmation = document.getElementById('rAffirmation').value.trim();
+    S.journal[vd].love        = document.getElementById('rLove').value.trim();
+    S.journal[vd].accept      = document.getElementById('rAccept').value.trim();
+    S.journal[vd].selfcare    = document.getElementById('rSelfcare').value.trim();
+    S.journal[vd].grat1       = document.getElementById('rGrat1').value.trim();
+    S.journal[vd].grat2       = document.getElementById('rGrat2').value.trim();
+    S.journal[vd].grat3       = document.getElementById('rGrat3').value.trim();
+    S.journal[vd].before      = document.getElementById('rBefore').value.trim();
+    S.journal[vd].after       = document.getElementById('rAfter').value.trim();
+    S.journal[vd].notes       = document.getElementById('rNotes').value.trim();
+    S.journal[vd].actionSteps = [
+      document.getElementById('rActionStep1').value.trim(),
+      document.getElementById('rActionStep2').value.trim(),
+      document.getElementById('rActionStep3').value.trim()
+    ].filter(Boolean);
+    delete S.journal[vd].actionStep; // remove legacy field
+    const e = S.journal[vd];
+    if (!e.affirmation && !e.love && !e.accept && !e.selfcare && !e.grat1 && !e.grat2 && !e.grat3 && !e.before && !e.after && !e.notes && !e.actionSteps.length) delete S.journal[vd];
+    saveState();
+    const el = document.getElementById('reflSaved');
+    el.textContent = 'Saved ✓';
+    el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2000);
+    toast('✦ Saved.');
+  });
+
+  // Wire program name inline edit
+  const progNameInput = document.getElementById('programNameInput');
+  if (progNameInput) {
+    // Show active border on focus
+    progNameInput.addEventListener('focus', function() {
+      this.style.borderBottomColor = '#C9A84C';
+      this.style.cursor = 'text';
+    });
+    // Save on blur (click away)
+    progNameInput.addEventListener('blur', function() {
+      this.style.borderBottomColor = 'transparent';
+      const newLabel = this.value.trim();
+      if (newLabel !== S.label) {
+        S.label = newLabel;
+        saveState();
+        // update settings field if open
+        const settEl = document.getElementById('settLabel');
+        if (settEl) settEl.value = newLabel;
+        toast('Program renamed.');
+      }
+    });
+    // Save on Enter
+    progNameInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { this.blur(); }
+    });
+    // Edit icon click focuses input
+    const icon = document.getElementById('progNameIcon');
+    if (icon) icon.addEventListener('click', () => progNameInput.focus());
+  }
+
+  // Wire autosave on all reflection inputs
+  ['rAffirmation','rLove','rAccept','rSelfcare','rGrat1','rGrat2','rGrat3','rBefore','rAfter','rNotes','rActionStep1','rActionStep2','rActionStep3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', autosaveRefl);
+  });
+
+  // Goals interactions
+  document.querySelectorAll('.gcb').forEach(el => {
+    el.addEventListener('click', function() {
+      const wk = this.dataset.wk, idx = parseInt(this.dataset.i);
+      collectGoalInputs(wk);
+      S.weeklyGoals[wk][idx].done = !S.weeklyGoals[wk][idx].done;
+      saveState(); renderCheckin();
+    });
+  });
+  document.querySelectorAll('.grm').forEach(el => {
+    el.addEventListener('click', function() {
+      const wk = this.dataset.wk, idx = parseInt(this.dataset.i);
+      collectGoalInputs(wk);
+      S.weeklyGoals[wk].splice(idx,1);
+      saveState(); renderCheckin();
+    });
+  });
+  document.querySelectorAll('.g-add').forEach(el => {
+    el.addEventListener('click', function() {
+      const wk = this.dataset.wk;
+      collectGoalInputs(wk);
+      S.weeklyGoals[wk].push({text:'',done:false});
+      saveState(); renderCheckin();
+      setTimeout(() => {
+        const inputs = document.querySelectorAll('.gi');
+        if (inputs.length) { const last = inputs[inputs.length-1]; last.focus({preventScroll:true}); last.scrollIntoView({behavior:'smooth',block:'center'}); }
+      }, 60);
+    });
+  });
+  document.querySelectorAll('.g-save').forEach(el => {
+    el.addEventListener('click', function() {
+      collectGoalInputs(this.dataset.wk);
+      saveState(); toast('Goals saved.');
+    });
+  });
+
+  // Autosave goal inputs on typing
+  document.querySelectorAll('.gi').forEach(inp => {
+    inp.addEventListener('input', function() {
+      // find the wk from sibling save button
+      const box = this.closest('.goals-box');
+      if (!box) return;
+      const saveBtn = box.querySelector('.g-save');
+      if (!saveBtn) return;
+      autosaveGoals(saveBtn.dataset.wk);
+    });
+  });
+
+  // Wire action steps add button
+  let stepsShown = 1;
+  if (entry.actionSteps && entry.actionSteps[1]) stepsShown = entry.actionSteps[2] ? 3 : 2;
+  function updateAddStepBtn() {
+    const btn = document.getElementById('btnAddStep');
+    const wrap = document.getElementById('addStepBtnWrap');
+    if (!btn) return;
+    if (stepsShown >= 3) { wrap.style.display = 'none'; }
+    else { wrap.style.display = ''; }
+  }
+  updateAddStepBtn();
+  const addStepBtn = document.getElementById('btnAddStep');
+  if (addStepBtn) {
+    addStepBtn.addEventListener('click', function() {
+      stepsShown++;
+      if (stepsShown >= 2) document.getElementById('actionStep2Row').style.display = '';
+      if (stepsShown >= 3) document.getElementById('actionStep3Row').style.display = '';
+      updateAddStepBtn();
+      const nextInput = document.getElementById('rActionStep' + stepsShown);
+      if (nextInput) nextInput.focus();
+    });
+  }
+
+  document.getElementById('hdrCount').textContent = doneCount();
+  document.getElementById('hdrLbl').textContent = 'of ' + S.programDays + ' Days';
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function autoGrow(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+
+function getGoals(wk) {
+  if (!S.weeklyGoals[wk]) {
+    // Check if previous week has unchecked goals to carry over
+    const wkNum = parseInt(wk.replace('w',''));
+    const prevWk = 'w' + (wkNum - 1);
+    const carried = wkNum > 1 && S.weeklyGoals[prevWk]
+      ? S.weeklyGoals[prevWk].filter(g => g.text && !g.done).map(g => ({text: g.text, done: false, carriedOver: true}))
+      : [];
+    // Fill remaining slots up to 3 with empty goals
+    const empty = [{text:'',done:false},{text:'',done:false},{text:'',done:false}];
+    S.weeklyGoals[wk] = [...carried, ...empty].slice(0, Math.max(3, carried.length));
+    saveState();
+  }
+  return S.weeklyGoals[wk];
+}
+function collectGoalInputs(wk) {
+  // Scope to the specific goals box to avoid index mismatch
+  const boxes = document.querySelectorAll('.goals-box');
+  boxes.forEach(box => {
+    const saveBtn = box.querySelector('.g-save');
+    if (!saveBtn || saveBtn.dataset.wk !== wk) return;
+    box.querySelectorAll('.gi').forEach((inp, i) => {
+      if (!S.weeklyGoals[wk]) S.weeklyGoals[wk] = [];
+      if (S.weeklyGoals[wk][i]) S.weeklyGoals[wk][i].text = inp.value.trim();
+    });
+  });
+}
+
+// ── GOALS TAB ─────────────────────────────────────────────────
+function renderGoals() {
+  if (!S) return;
+  const tw = totalWks();
+  let html = '';
+  for (let w = 1; w <= tw; w++) {
+    const wk = 'w'+w;
+    const goals = getGoals(wk).filter(g => g.text);
+    const d1=(w-1)*7+1, d2=Math.min(w*7,S.programDays);
+    const isCur = w === wkNum(today());
+    html += '<div class="week-section"><div class="week-hdr">Week '+w+(isCur?' <span style="font-size:12px;color:#C9A84C;font-family:Montserrat,sans-serif;">· Current</span>':'')+'</div><div class="week-range">Days '+d1+'–'+d2+'</div>';
+    if (!goals.length) {
+      html += '<div class="no-goals">No goals set yet.</div>';
+    } else {
+      goals.forEach(g => {
+        html += '<div class="goal-item"><div class="gtick '+(g.done?'on':'off')+'"></div><span class="gtxt'+(g.done?' struck':'')+'">'+escHtml(g.text)+'</span></div>';
+      });
+    }
+    html += '</div>';
+  }
+  document.getElementById('goalsBody').innerHTML = html || '<p class="empty">No goals yet.<br/>Add them on the Check-In tab.</p>';
+}
+
+// ── JOURNAL TAB ───────────────────────────────────────────────
+function renderJournal() {
+  if (!S) return;
+  const allDates = new Set([...S.checkIns, ...Object.keys(S.journal)]);
+  const sorted = [...allDates].filter(d => d >= S.startDate && d <= today()).sort((a,b) => b.localeCompare(a));
+  if (!sorted.length) {
+    document.getElementById('journalBody').innerHTML = '<p class="empty">No entries yet.<br/>Start on the Check-In tab.</p>';
+    return;
+  }
+  document.getElementById('journalBody').innerHTML = sorted.map(date => {
+    const e = S.journal[date] || {};
+    const listened = S.checkIns.includes(date);
+    const pd = progDay(date);
+    const hasEntry = e.affirmation||e.love||e.accept||e.selfcare||e.grat1||e.grat2||e.grat3||e.before||e.after||e.notes||e.words||(e.actionSteps&&e.actionSteps.length)||e.actionStep;
+    const id = 'je'+date.replace(/-/g,'');
+    let body = '';
+    if (e.affirmation) body += '<div class="jf"><div class="jlbl">Daily Affirmation</div><div class="jval">'+escHtml(e.affirmation)+'</div></div>';
+    if (e.love) body += '<div class="jf"><div class="jlbl">I love myself today because…</div><div class="jval">'+escHtml(e.love)+'</div></div>';
+    if (e.accept) body += '<div class="jf"><div class="jlbl">I accept myself today for…</div><div class="jval">'+escHtml(e.accept)+'</div></div>';
+    const grats = [e.grat1,e.grat2,e.grat3].filter(Boolean);
+    if (grats.length) body += '<div class="jf"><div class="jlbl">Grateful For</div>'+grats.map((g,i)=>'<div class="jval">'+(i+1)+'. '+escHtml(g)+'</div>').join('')+'</div>';
+    if (e.before||e.after) body += '<div class="j2"><div><div class="jlbl">Mood Before</div><div class="jval">'+(e.before||'—')+'</div></div><div><div class="jlbl">Mood After</div><div class="jval">'+(e.after||'—')+'</div></div></div>';
+    // legacy field support
+    if (e.words && !e.affirmation) body += '<div class="jf"><div class="jlbl">3 Words</div><div class="jval">'+escHtml(e.words)+'</div></div>';
+    if (e.notes) body += '<div class="jf" style="margin-top:8px;"><div class="jlbl">Daily Reflection</div><div class="jval">'+escHtml(e.notes)+'</div></div>';
+    if (e.selfcare) body += '<div class="jf"><div class="jlbl">For self-care today I will…</div><div class="jval">'+escHtml(e.selfcare)+'</div></div>';
+    if (e.actionSteps && e.actionSteps.length) body += '<div class="jf"><div class="jlbl">Action Steps Today</div>'+e.actionSteps.map((s,i)=>'<div class="jval">'+(i+1)+'. '+escHtml(s)+'</div>').join('')+'</div>';
+    else if (e.actionStep) body += '<div class="jf"><div class="jlbl">Action Step Today</div><div class="jval">'+escHtml(e.actionStep)+'</div></div>';
+    if (!hasEntry) body += '<div style="font-size:12px;color:#ccc;font-style:italic;padding-top:8px;">No reflection written.</div>';
+    body += '<button class="jedit" data-date="'+date+'">Edit this entry</button>';
+    return '<div class="jentry"><div class="jhdr" data-id="'+id+'">' +
+      '<div><div class="jdate">'+fmt(date)+'</div><div class="jdaynum">Day '+pd+'</div></div>' +
+      '<div style="display:flex;align-items:center;"><span class="jbadge '+(listened?'yes':'no')+'">'+(listened?'✓ Listened':'○ Not logged')+'</span><span class="jchev" id="chev-'+id+'">▾</span></div>' +
+      '</div><div class="jbody" id="'+id+'">'+body+'</div></div>';
+  }).join('');
+
+  document.querySelectorAll('.jhdr').forEach(el => {
+    el.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const body = document.getElementById(id);
+      const chev = document.getElementById('chev-'+id);
+      const open = body.classList.toggle('open');
+      if (chev) chev.classList.toggle('open', open);
+    });
+  });
+  document.querySelectorAll('.jedit').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      vd = this.dataset.date;
+      showTab('checkin');
+      renderCheckin();
+    });
+  });
+}
+
+// ── PROGRESS TAB ──────────────────────────────────────────────
+function renderProgress() {
+  if (!S) return;
+  const t = today(), pd = S.programDays;
+  document.getElementById('progressLbl').textContent = pd+'-Day Activity Map';
+  const hmap = document.getElementById('hmap');
+  hmap.style.gridTemplateColumns = 'repeat('+pd+',1fr)';
+  hmap.innerHTML = '';
+  for (let i = 0; i < pd; i++) {
+    const d = new Date(parse(S.startDate)); d.setDate(d.getDate()+i);
+    const s = ds(d), done = S.checkIns.includes(s) && s <= t, future = s > t;
+    const el = document.createElement('div');
+    el.className = 'hc '+(done?'on':'off');
+    el.style.opacity = future ? '0.22' : '1';
+    el.title = 'Day '+(i+1);
+    el.addEventListener('click', () => { vd=s; showTab('checkin'); renderCheckin(); });
+    hmap.appendChild(el);
+  }
+  const dc = doneCount(), pct = Math.min(100, Math.round(dc/pd*100));
+  document.getElementById('pbar').style.width = pct+'%';
+  document.getElementById('plLeft').textContent = 'Day '+dc+' of '+pd;
+  document.getElementById('plRight').textContent = pct+'% complete';
+  document.getElementById('stS').textContent = streak();
+  document.getElementById('stD').textContent = dc;
+  const days = Math.max(1, diff(S.startDate,t)+1);
+  document.getElementById('stR').textContent = Math.round(dc/days*100)+'%';
+  document.getElementById('badges').innerHTML = BADGES_DEF.filter(b=>b.d<=pd).map(b =>
+    '<div class="bdg '+(dc>=b.d?'on':'off')+'"><span class="bdg-i">'+b.i+'</span><span class="bdg-l">'+b.l+'</span></div>'
+  ).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function showInstructions() {
+  closeSettings();
+  // Show setup screen in read-only mode — data is preserved
+  showScreen('screenSetup');
+  // Add a "Back to App" button dynamically
+  if (!document.getElementById('btnBackToApp')) {
+    const btn = document.createElement('button');
+    btn.id = 'btnBackToApp';
+    btn.textContent = '← Back to My Tracker';
+    btn.style.cssText = 'display:block;width:calc(100% - 44px);margin:16px 22px 0;padding:13px;background:#1A1A1A;border:none;border-radius:8px;color:#C9A84C;font-family:Montserrat,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;';
+    btn.addEventListener('click', function() {
+      btn.remove();
+      showScreen('screenApp');
+    });
+    // Insert at top of setup content
+    const setupDiv = document.querySelector('.setup');
+    if (setupDiv) setupDiv.insertBefore(btn, setupDiv.firstChild);
+  }
+}
+
+function openSettings() {
+  if (!S) return;
+  document.getElementById('settLabel').value = S.label || '';
+  setSelDays('settLopts', S.programDays);
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('overlay').classList.remove('open'); }
+
+// ── MAIN INIT ─────────────────────────────────────────────────
+// ── NEW PROGRAM ─────────────────────────────────────────────
+function openNewProgram() {
+  closeSettings();
+  document.getElementById('npLabel').value = '';
+  setSelDays('npLopts', 21);
+  document.getElementById('npModal').classList.add('open');
+}
+function closeNewProgram() {
+  document.getElementById('npModal').classList.remove('open');
+}
+function confirmNewProgram() {
+  const newLabel = document.getElementById('npLabel').value.trim();
+  const days = getSelDays('npLopts');
+  const archive = getArchive();
+  // Archive current program with its own label (or auto-number)
+  const archived = Object.assign({}, S, {
+    label: S.label || ('Program ' + (archive.length + 1)),
+    archivedAt: today()
+  });
+  archive.push(archived);
+  // Start fresh new program with the name they just typed
+  S = { startDate:today(), programDays:days, label: newLabel || ('Program ' + (archive.length + 1)), checkIns:[], journal:{}, weeklyGoals:{} };
+  STATE = { current: S, archive };
+  saveState();
+  vd = today();
+  closeNewProgram();
+  showTab('checkin');
+  renderCheckin();
+  renderProgress();
+  toast('New program started. Previous program archived.');
+}
+
+// ── HISTORY RENDER ───────────────────────────────────────────
+function renderHistory() {
+  const archive = getArchive();
+  const el = document.getElementById('historyBody');
+  if (!S) return;
+
+  let html = '';
+
+  // Current program card
+  const curDone = doneCount();
+  const curPct = Math.min(100, Math.round(curDone / S.programDays * 100));
+  const curStreak = streak();
+  const isComplete = curDone >= S.programDays;
+  const progNum = archive.length + 1;
+  html += '<div class="current-badge">Current Program</div>' +
+    '<div class="prog-card">' +
+    '<div class="prog-card-hdr">' +
+      '<div><div class="prog-title">' + (S.label || 'Program ' + progNum) + '</div>' +
+      '<div class="prog-dates">Started ' + fmts(S.startDate) + ' · ' + S.programDays + ' days</div></div>' +
+      '<span class="prog-badge' + (isComplete?' complete':'') + '">' + curPct + '%</span>' +
+    '</div>' +
+    '<div class="prog-stats">' +
+      '<div class="prog-stat"><div class="prog-stat-n">' + curDone + '</div><div class="prog-stat-l">Listened</div></div>' +
+      '<div class="prog-stat"><div class="prog-stat-n">' + curStreak + '</div><div class="prog-stat-l">Streak</div></div>' +
+      '<div class="prog-stat"><div class="prog-stat-n">' + Object.keys(S.journal).length + '</div><div class="prog-stat-l">Entries</div></div>' +
+    '</div>' +
+    (isComplete ? '<div style="text-align:center;padding:8px 0 4px;font-size:14px;color:#C9A84C;">🦋 Program complete!</div>' : '') +
+    '</div>';
+
+  if (!archive.length) {
+    html += '<div class="empty" style="padding:20px 0;">No past programs yet.<br/>When you start a new program your history will appear here.</div>';
+  } else {
+    html += '<div class="sec-lbl" style="margin-top:20px;">Past Programs</div>';
+    [...archive].reverse().forEach((prog, i) => {
+      const done = prog.checkIns ? prog.checkIns.filter(d => d <= (prog.archivedAt||today())).length : 0;
+      const pct = Math.min(100, Math.round(done / prog.programDays * 100));
+      const entries = prog.journal ? Object.keys(prog.journal).length : 0;
+      const progLabel = prog.label || ('Program ' + (archive.length - i));
+      html += '<div class="prog-card">' +
+        '<div class="prog-card-hdr">' +
+          '<div><div class="prog-title">' + escHtml(progLabel) + '</div>' +
+          '<div class="prog-dates">'+fmts(prog.startDate)+' – '+(prog.archivedAt?fmts(prog.archivedAt):'') + ' · ' + prog.programDays + ' days</div></div>' +
+          '<span class="prog-badge' + (pct>=100?' complete':'') + '">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="prog-stats">' +
+          '<div class="prog-stat"><div class="prog-stat-n">' + done + '</div><div class="prog-stat-l">Listened</div></div>' +
+          '<div class="prog-stat"><div class="prog-stat-n">' + pct + '%</div><div class="prog-stat-l">Complete</div></div>' +
+          '<div class="prog-stat"><div class="prog-stat-n">' + entries + '</div><div class="prog-stat-l">Entries</div></div>' +
+        '</div>' +
+      '</div>';
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+
+
+// ── PRINT PAGE BUILDER ───────────────────────────────────────
+function buildPrintPage() {
+  if (!S) return '<p>No data.</p>';
+  const dc = doneCount();
+  const pct = Math.min(100, Math.round(dc / S.programDays * 100));
+  const progLabel = S.label || 'Activation Program';
+
+  // Build journal entries HTML
+  const allDates = new Set([...S.checkIns, ...Object.keys(S.journal)]);
+  const sorted = [...allDates].filter(d => d >= S.startDate && d <= today()).sort();
+  let journalRows = '';
+  sorted.forEach(date => {
+    const e = S.journal[date] || {};
+    const listened = S.checkIns.includes(date);
+    const pd = progDay(date);
+    const grats = [e.grat1,e.grat2,e.grat3].filter(Boolean).join(' · ');
+    journalRows += `
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;font-size:11px;color:#888;white-space:nowrap;">${fmt(date)}<br/><span style="color:#aaa;font-size:10px;">Day ${pd}</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;text-align:center;font-size:13px;">${listened ? '✓' : '○'}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;font-size:12px;">${escHtml(e.affirmation || e.words || '')}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;font-size:12px;">${escHtml(grats)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;font-size:12px;">${escHtml(e.before || '')} → ${escHtml(e.after || '')}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #EDE9E0;font-size:12px;">${escHtml(e.notes || '')}</td>
+      </tr>`;
+  });
+
+  // Build goals HTML
+  const tw = totalWks();
+  let goalsHTML = '';
+  for (let w = 1; w <= tw; w++) {
+    const wk = 'w' + w;
+    const goals = getGoals(wk).filter(g => g.text);
+    if (!goals.length) continue;
+    goalsHTML += `<div style="margin-bottom:14px;">
+      <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:8px;">Week ${w}</div>
+      ${goals.map(g => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;">
+        <span style="width:16px;height:16px;border-radius:3px;background:${g.done ? '#C9A84C' : 'transparent'};border:1.5px solid ${g.done ? '#C9A84C' : '#ddd'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:#fff;">${g.done ? '✓' : ''}</span>
+        <span style="${g.done ? 'text-decoration:line-through;color:#bbb;' : ''}">${escHtml(g.text)}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>${progLabel} — Source Code Daily Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Montserrat',sans-serif;font-weight:400;color:#1A1A1A;background:#fff;padding:0;}
+  @media print{body{padding:0;} .no-print{display:none;}}
+</style>
+</head>
+<body>
+  <!-- HEADER -->
+  <div style="background:#1A1A1A;padding:20px 32px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#C9A84C;">✦ Source Code Daily Tracker</div>
+      <div style="font-size:11px;color:#C9A84C;margin-top:4px;opacity:0.8;">${escHtml(progLabel)}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#C9A84C;line-height:1;">${dc}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-transform:uppercase;">of ${S.programDays} Days</div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div style="background:#F8F6F2;border-bottom:1px solid #EDE9E0;padding:14px 32px;display:flex;gap:32px;">
+    <div><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;">Started</span><br/><span style="font-size:13px;font-family:'Cormorant Garamond',serif;">${fmts(S.startDate)}</span></div>
+    <div><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;">Program</span><br/><span style="font-size:13px;font-family:'Cormorant Garamond',serif;">${S.programDays} Days</span></div>
+    <div><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;">Complete</span><br/><span style="font-size:13px;font-family:'Cormorant Garamond',serif;">${pct}%</span></div>
+    <div><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;">Streak</span><br/><span style="font-size:13px;font-family:'Cormorant Garamond',serif;">${streak()} days</span></div>
+  </div>
+
+  <div style="padding:28px 32px;">
+
+    <!-- GOALS -->
+    ${goalsHTML ? `<div style="margin-bottom:32px;">
+      <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #EDE9E0;">Weekly Goals</div>
+      ${goalsHTML}
+    </div>` : ''}
+
+    <!-- JOURNAL TABLE -->
+    <div>
+      <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #EDE9E0;">Daily Log</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#1A1A1A;">
+            <th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Date</th>
+            <th style="padding:8px 10px;text-align:center;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Listened</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Affirmation</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Gratitudes</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Mood Before → After</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#C9A84C;font-weight:600;">Daily Reflection</th>
+          </tr>
+        </thead>
+        <tbody>${journalRows || '<tr><td colspan="6" style="padding:20px;text-align:center;color:#bbb;font-size:12px;">No entries yet.</td></tr>'}</tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:40px;padding:16px 32px;border-top:1px solid #EDE9E0;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:10px;color:#aaa;">© 2026 Wendy Lee-Chu. All rights reserved.</div>
+    <div style="font-size:10px;color:#C9A84C;font-weight:600;">wendyleechu.com</div>
+  </div>
+
+  <script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
+}
+
+// ── AUTOSAVE ─────────────────────────────────────────────────
+let autosaveTimer = null;
+
+function autosaveRefl() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    if (!S || !vd) return;
+    const affirmation = document.getElementById('rAffirmation');
+    const love        = document.getElementById('rLove');
+    const accept      = document.getElementById('rAccept');
+    const selfcare    = document.getElementById('rSelfcare');
+    const grat1       = document.getElementById('rGrat1');
+    const grat2       = document.getElementById('rGrat2');
+    const grat3       = document.getElementById('rGrat3');
+    const before      = document.getElementById('rBefore');
+    const after       = document.getElementById('rAfter');
+    const notes       = document.getElementById('rNotes');
+    if (!affirmation) return; // fields not rendered yet
+    if (!S.journal[vd]) S.journal[vd] = {};
+    S.journal[vd].affirmation = affirmation.value.trim();
+    S.journal[vd].love        = love.value.trim();
+    S.journal[vd].accept      = accept.value.trim();
+    S.journal[vd].selfcare    = selfcare.value.trim();
+    S.journal[vd].grat1       = grat1.value.trim();
+    S.journal[vd].grat2       = grat2.value.trim();
+    S.journal[vd].grat3       = grat3.value.trim();
+    S.journal[vd].before      = before.value.trim();
+    S.journal[vd].after       = after.value.trim();
+    S.journal[vd].notes       = notes.value.trim();
+    const s1 = document.getElementById('rActionStep1');
+    const s2 = document.getElementById('rActionStep2');
+    const s3 = document.getElementById('rActionStep3');
+    S.journal[vd].actionSteps = [s1,s2,s3].map(el => el ? el.value.trim() : '').filter(Boolean);
+    const e = S.journal[vd];
+    if (!e.affirmation && !e.love && !e.accept && !e.selfcare && !e.grat1 && !e.grat2 && !e.grat3 && !e.before && !e.after && !e.notes && !e.actionSteps.length) delete S.journal[vd];
+    saveState();
+    const el = document.getElementById('reflSaved');
+    if (el) { el.textContent = 'Autosaved ✓'; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 1800); }
+  }, 1500);
+}
+
+function autosaveGoals(wk) {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    if (!S) return;
+    collectGoalInputs(wk);
+    saveState();
+    toast('Goals autosaved.');
+  }, 1500);
+}
+
+function init() {
+  // Always decide screen first before any DOM interaction
+  loadState();
+
+  // Quote
+  document.getElementById('quoteEl').textContent = QQ[Math.floor(Date.now()/86400000) % QQ.length];
+
+  // Setup opts
+  initOpts('setupLopts');
+  initOpts('settLopts');
+
+  // Tab clicks
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => showTab(t.dataset.tab));
+  });
+
+
+
+  // Gear
+  document.getElementById('btnGear').addEventListener('click', openSettings);
+  document.getElementById('btnViewInstructions').addEventListener('click', showInstructions);
+  document.getElementById('btnHome').addEventListener('click', function() {
+    showTab('checkin');
+  });
+  document.getElementById('btnNewProgram').addEventListener('click', openNewProgram);
+  document.getElementById('btnConfirmNewProg').addEventListener('click', confirmNewProgram);
+  document.getElementById('btnCancelNewProg').addEventListener('click', closeNewProgram);
+  initOpts('npLopts');
+  document.getElementById('npModal').addEventListener('click', function(e){ if(e.target===this) closeNewProgram(); });
+
+  // Settings sheet
+  document.getElementById('btnSettSave').addEventListener('click', function() {
+    S.label = document.getElementById('settLabel').value.trim();
+    S.programDays = getSelDays('settLopts');
+    saveState(); closeSettings(); renderCheckin(); renderProgress();
+    toast('Settings saved.');
+  });
+  document.getElementById('btnSettClose').addEventListener('click', closeSettings);
+  document.getElementById('overlay').addEventListener('click', function(e) { if(e.target===this) closeSettings(); });
+
+  document.getElementById('btnReset').addEventListener('click', function() {
+    if (confirm('This will permanently erase ALL programs and data. Are you sure?')) {
+      localStorage.removeItem(KEY);
+      S = null; STATE = null; closeSettings();
+      showScreen('screenSetup');
+    }
+  });
+
+  document.getElementById('btnPrint').addEventListener('click', function() {
+    closeSettings();
+    // Build a clean print-ready version and open in new tab
+    const printHTML = buildPrintPage();
+    const win = window.open('', '_blank');
+    win.document.write(printHTML);
+    win.document.close();
+    // Auto-trigger print dialog in the new tab
+    win.onload = function() { win.print(); };
+  });
+
+  document.getElementById('btnExport').addEventListener('click', function() {
+    const blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = (S.label||'activation').replace(/\s+/g,'-').toLowerCase()+'-backup.json'; a.click();
+    URL.revokeObjectURL(url); toast('Backup exported.');
+  });
+
+  document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.startDate||!data.programDays||!Array.isArray(data.checkIns)) { toast('Invalid file.'); return; }
+        if (!confirm('This will replace your current program data with the backup file. Your current data will be lost. Continue?')) return;
+        S = data; if(!S.weeklyGoals) S.weeklyGoals={}; if(!S.journal) S.journal={};
+        saveState(); closeSettings(); vd=today(); renderCheckin(); renderProgress();
+        toast('Data imported.');
+      } catch(err) { toast('Could not read file.'); }
+    };
+    reader.readAsText(file); e.target.value='';
+  });
+
+  // Start button
+  document.getElementById('btnStart').addEventListener('click', function() {
+    const days = getSelDays('setupLopts');
+    S = { startDate:today(), programDays:days, label:'', checkIns:[], journal:{}, weeklyGoals:{} };
+    STATE = { current: S, archive: getArchive() };
+    saveState();
+    vd = today();
+    showScreen('screenApp');
+    renderCheckin();
+    renderProgress();
+  });
+
+  // Show correct screen based on state
+  if (S) {
+    vd = today();
+    showScreen('screenApp');
+    renderCheckin();
+    renderProgress();
+    if (doneCount() >= S.programDays) {
+      setTimeout(() => toast('🦋 Program complete! Tap ⚙ to start a new one.'), 800);
+    }
+  } else {
+    showScreen('screenSetup');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
